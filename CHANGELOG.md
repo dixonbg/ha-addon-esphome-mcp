@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 - **Bert Berrevoets** — Project author
 - **Claude Code** — AI-assisted development
 
+## [1.1.0] - 2026-06-28
+
+### Changed
+
+Author: *Claude Code*
+
+- Switched the add-on's base image from Alpine (`home-assistant/*-base-python`)
+  to Debian (`ghcr.io/esphome/docker-base:debian-ha-addon-*`) — the same base
+  the official ESPHome Device Builder add-on uses. `esphome_compile`/
+  `esphome_flash` for esp-idf-framework devices failed under Alpine with
+  "Failed to install Python dependencies into penv": pioarduino's esp-idf
+  toolchain pip-installs manylinux (glibc) wheels into its own venv, which
+  is incompatible with musl libc. Debian doesn't have this problem and
+  already ships git/build-essential/curl, so the old `apk add` build-deps
+  step was removed as unnecessary.
+
 ## [1.0.1] - 2026-06-28
 
 ### Fixed

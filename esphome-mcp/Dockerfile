@@ -1,16 +1,13 @@
 ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
-# Install build dependencies for ESPHome native compilation
-RUN apk add --no-cache \
-    gcc \
-    g++ \
-    musl-dev \
-    libffi-dev \
-    openssl-dev \
-    rust \
-    cargo \
-    git
+# BUILD_FROM is ghcr.io/esphome/docker-base:debian-ha-addon-<version> — the
+# same Debian + bashio + s6-overlay base the official ESPHome add-on uses.
+# A plain Alpine HA base (the previous BUILD_FROM) fails to compile esp-idf
+# framework devices: pioarduino's esp-idf toolchain pip-installs manylinux
+# (glibc) wheels into its own venv, which breaks under musl libc with
+# "Failed to install Python dependencies into penv". Debian avoids this and
+# already ships git/build-essential/curl, so no apk/apt step is needed here.
 
 # Install Python dependencies and ESPHome
 COPY requirements.txt /tmp/
