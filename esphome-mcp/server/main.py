@@ -67,7 +67,7 @@ def esphome_flash(device: str) -> str:
 
 
 @mcp.tool()
-def esphome_logs(device: str, num_lines: int = 50) -> str:
+def esphome_logs(device: str, num_lines: int = 50, host: str | None = None) -> str:
     """Get recent logs from an ESPHome device.
 
     Captures a snapshot of logs (streaming is not supported in MCP tools).
@@ -75,8 +75,14 @@ def esphome_logs(device: str, num_lines: int = 50) -> str:
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename.
         num_lines: Number of log lines to return (default 50).
+        host: Log source to read from, passed as `esphome logs --device <host>`.
+              Defaults to OTA at "<esphome.name>.local" so the call doesn't
+              block on the interactive picker when other serial adapters
+              (e.g. Zigbee dongles) are also present on the HA host. Pass a
+              serial path (e.g. "/dev/ttyUSB0") to read from a wired adapter
+              instead.
     """
-    return tools.logs(device, num_lines)
+    return tools.logs(device, num_lines, host)
 
 
 @mcp.tool()

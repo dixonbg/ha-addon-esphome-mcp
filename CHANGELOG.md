@@ -7,6 +7,18 @@ All notable changes to this project will be documented in this file.
 - **Bert Berrevoets** — Project author
 - **Claude Code** — AI-assisted development
 
+## [1.0.1] - 2026-06-28
+
+### Fixed
+
+Author: *Claude Code*
+
+- `esphome_logs` no longer hangs and fails with `EOFError` when the HA host
+  has multiple log sources available (e.g. Zigbee dongles alongside OTA).
+  The tool now passes `--device <host>` to the ESPHome CLI, defaulting to
+  OTA at `<esphome.name>.local`, and accepts an optional `host` argument to
+  target a specific serial adapter instead.
+
 ## [1.0.0] - 2026-03-17
 
 ### Added

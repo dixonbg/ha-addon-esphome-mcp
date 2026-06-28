@@ -157,15 +157,28 @@ def flash(device: str) -> str:
     return _run([ESPHOME_BIN, "run", yaml_path, "--no-logs"], timeout=600)
 
 
-def logs(device: str, num_lines: int = 50) -> str:
-    """Get recent logs from an ESPHome device."""
+def logs(device: str, num_lines: int = 50, host: str | None = None) -> str:
+    """Get recent logs from an ESPHome device.
+
+    Args:
+        device: Device name (e.g. 'kc868-a8') or YAML filename.
+        num_lines: Number of trailing log lines to return.
+        host: Log source to use (matches `esphome logs --device <host>`).
+            If omitted, defaults to OTA at "<esphome.name>.local" so the
+            command doesn't block on the interactive picker when multiple
+            serial adapters are also present on the HA host.
+    """
     yaml_path = _device_yaml_path(device)
     if not os.path.isfile(yaml_path):
         return f"Device config not found: {yaml_path}"
-    output = _run(
-        ["timeout", "15", ESPHOME_BIN, "logs", yaml_path],
-        timeout=30,
-    )
+    if host is None:
+        info = _parse_device_info(yaml_path)
+        name = info.get("name")
+        host = f"{name}.local" if name and name != "unknown" else None
+    cmd = ["timeout", "15", ESPHOME_BIN, "logs", yaml_path]
+    if host:
+        cmd += ["--device", host]
+    output = _run(cmd, timeout=30)
     lines = output.splitlines()
     if len(lines) > num_lines:
         lines = lines[-num_lines:]
