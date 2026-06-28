@@ -98,6 +98,17 @@ def _is_forbidden(filename: str) -> bool:
     return os.path.basename(filename).lower() in FORBIDDEN_FILES
 
 
+def _is_within_esphome_dir(filename: str) -> bool:
+    """True only if filename resolves to a path inside ESPHOME_DIR.
+
+    Guards push_files/pull_files against '../' or absolute paths escaping
+    /config/esphome (the add-on has config:rw over all of /config).
+    """
+    target = os.path.realpath(os.path.join(ESPHOME_DIR, filename))
+    base = os.path.realpath(ESPHOME_DIR)
+    return target == base or target.startswith(base + os.sep)
+
+
 # ---------------------------------------------------------------------------
 # Tool functions
 # ---------------------------------------------------------------------------
@@ -199,6 +210,9 @@ def push_files(files: dict[str, str]) -> str:
         if not filename.endswith(".yaml"):
             results.append(f"{filename}: REJECTED (only .yaml files allowed)")
             continue
+        if not _is_within_esphome_dir(filename):
+            results.append(f"{filename}: REJECTED (path escapes esphome dir)")
+            continue
 
         # Support archive/ subdirectory
         target = os.path.join(ESPHOME_DIR, filename)
@@ -236,6 +250,8 @@ def pull_files(filenames: list[str] | None = None) -> dict[str, str]:
         for fn in filenames:
             if not fn.endswith(".yaml"):
                 fn = f"{fn}.yaml"
+            if not _is_within_esphome_dir(fn):
+                continue
             path = os.path.join(ESPHOME_DIR, fn)
             if os.path.isfile(path):
                 paths.append(path)

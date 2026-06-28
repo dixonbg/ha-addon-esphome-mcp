@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 - **Bert Berrevoets** — Project author
 - **Claude Code** — AI-assisted development
 
+## [1.1.1] - 2026-06-28
+
+### Fixed
+
+Author: *Claude Code*
+
+- `push_files`/`pull_files` now reject filenames that resolve outside
+  `/config/esphome` (realpath containment check), closing a path-traversal
+  gap where a `../` filename could read or write elsewhere under `/config`.
+
 ## [1.1.0] - 2026-06-28
 
 ### Changed
