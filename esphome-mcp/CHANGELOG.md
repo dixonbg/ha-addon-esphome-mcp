@@ -7,6 +7,27 @@ All notable changes to this project will be documented in this file.
 - **Bert Berrevoets** — Project author
 - **Claude Code** — AI-assisted development
 
+## [1.1.3] - 2026-06-29
+
+### Fixed
+
+Author: *Claude Code*
+
+- `esphome_flash`/`esphome_logs` default OTA host was the literal
+  `${name}.local` for substitution/package-based configs, because the raw
+  YAML parse can't resolve `substitutions:`. `_default_ota_host()` now falls
+  back to the YAML filename stem (which matches the device name for these
+  configs), so the default host works without passing `host=` explicitly.
+
+### Changed
+
+- Raised `esphome_compile` and `esphome_flash` subprocess timeouts from
+  300s/600s to 1800s. Heavy builds (e.g. voice assistants with
+  esp-tflite-micro wake-word models, LVGL displays) exceed 300s; killing the
+  build mid-archive left a corrupted `.esphome/build` dir. (Note: MCP clients
+  may impose their own idle timeout — e.g. Claude Code ~300s — but the build
+  now completes server-side, so a subsequent cached compile returns quickly.)
+
 ## [1.1.2] - 2026-06-29
 
 ### Fixed

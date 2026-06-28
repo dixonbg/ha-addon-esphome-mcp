@@ -157,14 +157,23 @@ def compile_device(device: str) -> str:
     yaml_path = _device_yaml_path(device)
     if not os.path.isfile(yaml_path):
         return f"Device config not found: {yaml_path}"
-    return _run([ESPHOME_BIN, "compile", yaml_path], timeout=300)
+    return _run([ESPHOME_BIN, "compile", yaml_path], timeout=1800)
 
 
 def _default_ota_host(yaml_path: str) -> str | None:
-    """Best-guess OTA hostname for a device, or None if unknown."""
+    """Best-guess OTA hostname for a device, or None if unknown.
+
+    For substitution/package-based configs (e.g. `name: ${name}` or
+    `name: $device_name`) the raw YAML parse in _parse_device_info can't
+    resolve the value, so it comes back containing '$'. In that case fall
+    back to the YAML filename stem, which for these configs matches the
+    device name (e.g. atom-bluetooth-proxy-9f9758.yaml -> ...9f9758).
+    """
     info = _parse_device_info(yaml_path)
     name = info.get("name")
-    return f"{name}.local" if name and name != "unknown" else None
+    if not name or name == "unknown" or "$" in name:
+        name = os.path.splitext(os.path.basename(yaml_path))[0]
+    return f"{name}.local" if name else None
 
 
 def flash(device: str, host: str | None = None) -> str:
@@ -185,7 +194,7 @@ def flash(device: str, host: str | None = None) -> str:
     cmd = [ESPHOME_BIN, "run", yaml_path, "--no-logs"]
     if host:
         cmd += ["--device", host]
-    return _run(cmd, timeout=600)
+    return _run(cmd, timeout=1800)
 
 
 def logs(device: str, num_lines: int = 50, host: str | None = None) -> str:
