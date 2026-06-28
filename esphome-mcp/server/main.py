@@ -57,13 +57,19 @@ def esphome_compile(device: str) -> str:
 
 
 @mcp.tool()
-def esphome_flash(device: str) -> str:
+def esphome_flash(device: str, host: str | None = None) -> str:
     """OTA flash a device.
 
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename.
+        host: Upload target to use, passed as `esphome run --device <host>`.
+              Defaults to OTA at "<esphome.name>.local" so the call doesn't
+              block on the interactive picker when serial adapters (e.g.
+              Zigbee dongles) are also present on the HA host. Pass a serial
+              path (e.g. "/dev/ttyUSB0") to flash over a wired connection
+              instead.
     """
-    return tools.flash(device)
+    return tools.flash(device, host)
 
 
 @mcp.tool()

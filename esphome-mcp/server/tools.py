@@ -160,12 +160,32 @@ def compile_device(device: str) -> str:
     return _run([ESPHOME_BIN, "compile", yaml_path], timeout=300)
 
 
-def flash(device: str) -> str:
-    """OTA flash a device."""
+def _default_ota_host(yaml_path: str) -> str | None:
+    """Best-guess OTA hostname for a device, or None if unknown."""
+    info = _parse_device_info(yaml_path)
+    name = info.get("name")
+    return f"{name}.local" if name and name != "unknown" else None
+
+
+def flash(device: str, host: str | None = None) -> str:
+    """OTA flash a device.
+
+    Args:
+        device: Device name (e.g. 'kc868-a8') or YAML filename.
+        host: Upload target to use (matches `esphome run --device <host>`).
+            If omitted, defaults to OTA at "<esphome.name>.local" so the
+            command doesn't block on the interactive picker when serial
+            adapters are also present on the HA host.
+    """
     yaml_path = _device_yaml_path(device)
     if not os.path.isfile(yaml_path):
         return f"Device config not found: {yaml_path}"
-    return _run([ESPHOME_BIN, "run", yaml_path, "--no-logs"], timeout=600)
+    if host is None:
+        host = _default_ota_host(yaml_path)
+    cmd = [ESPHOME_BIN, "run", yaml_path, "--no-logs"]
+    if host:
+        cmd += ["--device", host]
+    return _run(cmd, timeout=600)
 
 
 def logs(device: str, num_lines: int = 50, host: str | None = None) -> str:
@@ -183,9 +203,7 @@ def logs(device: str, num_lines: int = 50, host: str | None = None) -> str:
     if not os.path.isfile(yaml_path):
         return f"Device config not found: {yaml_path}"
     if host is None:
-        info = _parse_device_info(yaml_path)
-        name = info.get("name")
-        host = f"{name}.local" if name and name != "unknown" else None
+        host = _default_ota_host(yaml_path)
     cmd = ["timeout", "15", ESPHOME_BIN, "logs", yaml_path]
     if host:
         cmd += ["--device", host]

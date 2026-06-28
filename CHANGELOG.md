@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 - **Bert Berrevoets** — Project author
 - **Claude Code** — AI-assisted development
 
+## [1.1.2] - 2026-06-29
+
+### Fixed
+
+Author: *Claude Code*
+
+- `esphome_flash` had the same interactive-picker hang as `esphome_logs`
+  (fixed in 1.0.1): `esphome run` blocked on "Found multiple options for
+  uploading" with no stdin, then died with `EOFError`, whenever serial
+  adapters were present alongside the OTA target. Added the same
+  `--device <host>` passthrough, defaulting to OTA at
+  `<esphome.name>.local`, shared with `esphome_logs` via a new
+  `_default_ota_host()` helper.
+
 ## [1.1.1] - 2026-06-28
 
 ### Fixed
